@@ -37,21 +37,25 @@ pipeline {
                 sh 'echo y | docker container prune '
                 sh 'docker volume rm db-mysql-data || echo "no volume"'
 
-                sh "docker run --name db-mysql --rm --network dev -v khalid-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_LOGIN_PSW} -e MYSQL_DATABASE=db_example  -d mysql:8.0 "
+                // sh "docker run --name db-mysql --rm --network dev -v khalid-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_LOGIN_PSW} -e MYSQL_DATABASE=db_example  -d mysql:8.0 "
+                // sh 'sleep 20'
+                // sh "docker exec -i db-mysql mysql --user=root --password=${MYSQL_ROOT_LOGIN_PSW} < script"
+                withCredentials([string(credentialsId: 'mysql-root-login', variable: 'mysqlRootPassword')]) {
+                sh "docker run --name db-mysql --rm --network dev -v mysql-data:/var/lib/mysql -e mysql-root-login=${mysqlRootPassword} -e MYSQL_DATABASE=db_example -d mysql:8.0"
                 sh 'sleep 20'
-                sh "docker exec -i db-mysql mysql --user=root --password=${MYSQL_ROOT_LOGIN_PSW} < script"
+                sh 'docker exec -i db-mysql mysql --user=root --password=${mysqlRootPassword} < script'
+                }
             }
         }
-
         stage('Deploy Spring Boot to DEV') {
             steps {
                 echo 'Deploying and cleaning'
-                sh 'docker image pull khaliddinh/springboot'
-                sh 'docker container stop khalid-springboot || echo "this container does not exist" '
+                sh 'docker image pull mathoanghai92/springboot'
+                sh 'docker container stop mathoanghai92-springboot || echo "this container does not exist" '
                 sh 'docker network create dev || echo "this network exists"'
                 sh 'echo y | docker container prune '
 
-                sh 'docker container run -d --rm --name khalid-springboot -p 8081:8080 --network dev khaliddinh/springboot'
+                sh 'docker container run -d --rm --name mathoanghai92-springboot -p 8081:8080 --network dev mathoanghai92/springboot'
             }
         }
  
