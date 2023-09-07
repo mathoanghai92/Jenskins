@@ -42,7 +42,7 @@ pipeline {
                 sh "docker exec -i khalid-mysql mysql --user=root --password=${MYSQL_ROOT_LOGIN_PSW} < script"
             }
         }
-        
+
         stage('Deploy Spring Boot to DEV') {
             steps {
                 echo 'Deploying and cleaning'
