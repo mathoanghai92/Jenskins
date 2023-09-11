@@ -1,0 +1,50 @@
+FROM python:3.8-slim-bullseye AS base
+RUN apt update && apt upgrade -y
+# RUN diagTools="redis-tools" \
+#  && apt install -y $diagTools
+RUN buildDeps="git wget" \
+ && apt install -y $buildDeps \
+    locales \
+    fontconfig \
+    libfreetype6 \
+    libjpeg62-turbo \
+    libpng16-16 \
+    libx11-6 \
+    libxcb1 \
+    libxext6 \
+    libxrender1 \
+    xfonts-75dpi \
+    xfonts-base \
+ && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
+ && locale-gen
+
+WORKDIR /tmp
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.bullseye_amd64.deb
+RUN apt install ./wkhtmltox_0.12.6.1-2.bullseye_amd64.deb
+
+WORKDIR /smb/app
+# Pull source
+ARG GIT_BRANCH
+RUN git clone https://github.com/mathoanghai92/DjangoCRM.git .
+RUN pip3 install --upgrade pip \
+ && pip3 install --no-cache-dir sourcedefender \
+ && pip3 install --no-cache-dir -r /smb/app/requirements.txt \
+ && cp -r /usr/local/bin/wkhtmltopdf /smb/app/ThirdPartyPackage/wkhtmltopdf/bin/wkhtmltopdf \
+ && cp -r /usr/local/lib/libwkhtmltox* /smb/app/ThirdPartyPackage/wkhtmltopdf/lib \
+ && cp -r /usr/local/include/wkhtmltox /smb/app/ThirdPartyPackage/wkhtmltopdf/include/wkhtmltox \
+ && cp -r /usr/local/bin/wkhtmltopdf /smb/app/ThirdPartyPackage/wkhtmltopdf/bin/wkhtmltopdf \
+ && chmod +x /smb/app/ThirdPartyPackage/wkhtmltopdf/bin/wkhtmltopdf
+
+# Clean up
+RUN apt purge -y --auto-remove $buildDeps \
+ && apt clean \
+ && apt autoremove \
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /root/.ssh/*
+
+RUN chgrp -R 0 /smb && chmod -R g=u /smb
+RUN chown -R 1001:0 /smb
+USER 1001
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1

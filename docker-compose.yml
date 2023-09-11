@@ -1,0 +1,55 @@
+version: "3.6"
+services:
+  ucrm-fe:
+    build:
+      context: "./"
+      dockerfile: "./Dockerfile_fe"
+    container_name: ucrm-fe
+    image: mathoanghai92/fe-crm-v2.56.0
+    ports:
+      - "80:8008"
+    restart: always
+
+  ucrm-be:
+    build:
+      context: "./"
+      dockerfile: "./Dockerfile_be"
+    container_name: ucrm-be
+    image: mathoanghai92/be-crm-v2.49.1
+    ports:
+      - "8000:8000"
+    volumes:
+      - /smb/media:/smb/media
+    restart: always
+
+  ucrm-celery:
+    build:
+      context: "./"
+      dockerfile: "./Dockerfile_celery"
+    container_name: ucrm-celery
+    image: mathoanghai92/celery-crm-v2.49.1
+    volumes:
+      - /smb/media:/smb/media
+    restart: always
+
+  ucrm-daphne:
+    build:
+      context: "./"
+      dockerfile: "./Dockerfile_daphne"
+    container_name: ucrm-daphne
+    image: mathoanghai92/daphne-crm-v2.49.1
+    ports:
+      - "8002:8002"
+    volumes:
+      - /smb/media:/smb/media
+    restart: always
+
+  redis-server:
+    image: redis:7.2-alpine
+    container_name: redis-server
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --loglevel warning
+    # volumes:
+    #   - /app/redis:/data
