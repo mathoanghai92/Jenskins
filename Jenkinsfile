@@ -53,7 +53,7 @@ pipeline {
     agent any
      
     stages {
-        stage('Push') {
+        stage('Build/Push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/') {
