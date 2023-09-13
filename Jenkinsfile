@@ -51,20 +51,14 @@
 
 pipeline {
     agent any
-     environment {
-        PATH = "$PATH:/usr/local/bin"
-    }
+     
     stages {
-        stage('Build') {
-            steps {
-                sh 'docker-compose build'
-            }
-        }
-
         stage('Push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/') {
+                        sh 'docker-compose build'
+                        sh 'sleep 20'
                         sh 'docker-compose push'
                     }
                 }
