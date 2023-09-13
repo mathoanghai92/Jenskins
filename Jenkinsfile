@@ -50,23 +50,33 @@
 // }
 
 pipeline {
-    agent any
-     
-    stages {
-        stage('Build/Push') {
-            steps {
-                    withDockerRegistry(credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/') {
-                        sh 'docker-compose build'
-                        sh 'sleep 20'
-                        sh 'docker-compose push'
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh 'docker-compose up -d'
-            }
-        }
+  agent any
+ 
+  stages {
+    stage('Checkout') {
+      steps {
+        sh echo"Checking"
+      }
     }
+ 
+    stage('Build Docker Image') {
+      steps {
+        script {
+          // Build the Docker image using docker-compose
+          sh 'docker-compose build'
+        }
+      }
+    }
+ 
+    stage('Push Docker Image') {
+      steps {
+        script {
+            withDockerRegistry(credentialsId: 'dockerhub', url: 'https://index.docker.io/v1/') {
+                // Push the Docker image to a Docker registry
+                sh 'docker-compose push'
+            }
+        }
+      }
+    }
+  }
 }
