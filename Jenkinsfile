@@ -55,7 +55,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh echo"Checking"
+        echo"Checking"
       }
     }
  
